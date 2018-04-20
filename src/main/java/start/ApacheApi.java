@@ -16,7 +16,7 @@ public class ApacheApi {
     public static void main(String[] args) {
         try {
             DefaultHttpClient httpClient = new DefaultHttpClient();
-            HttpGet getRequest = new HttpGet("https://api.elsevier.com/content/author/author_id/56798172900");
+            HttpGet getRequest = new HttpGet("https://www.scopus.com/authid/detail.uri?authorId=14032958500");
             getRequest.addHeader("accept", "application/json");
             getRequest.addHeader("x-els-apikey", "fa749f1f51a7cd468697c4ad217021ea");
 
@@ -39,7 +39,7 @@ public class ApacheApi {
             httpClient.getConnectionManager().shutdown();
 
         } catch (ClientProtocolException e) {
-
+            System.out.println(e.getCause());
             e.printStackTrace();
 
         } catch (IOException e) {

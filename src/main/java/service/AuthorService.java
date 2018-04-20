@@ -3,9 +3,6 @@ package service;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.sun.org.apache.xerces.internal.parsers.DOMParser;
-import jdk.internal.org.xml.sax.InputSource;
-import jdk.internal.org.xml.sax.SAXException;
 import model.Author;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -14,13 +11,13 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.Document;
 import repo.AuthorTrieRepository;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.Normalizer;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -160,15 +157,12 @@ public class AuthorService {
         String surname = names[0];
         String firstName = stringBuilder.toString().trim();
 //        query= AUTHLASTNAME(Mircea) AND AUTHFIRST(Gabriel Ioan) AND AFFIL(Universitatea Babes-Bolyai din Cluj-Napoca)
-//        System.out.println();
         //String apiUrl = authorSearchByNameApiUrl + "query=AUTHLASTNAME(" + surname + ")AND%20AUTHFIRST(" + firstName + ")AND%20AFFIL(Universitatea%20Babes-Bolyai%20din%20Cluj-Napoca)";
         String apiUrl = authorSearchByNameApiUrl + "query=AUTHLASTNAME(" + surname + ")AND AUTHFIRST(" + firstName + ")AND AFFIL(Universitatea Babes-Bolyai din Cluj-Napoca)";
         apiUrl = apiUrl.replaceAll(" ", "%20");
 
-        //System.out.println(apiUrl);
 
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()){
-            //HttpClient client = new HttpClient();
             HttpGet getRequest = new HttpGet(apiUrl);
             getRequest.addHeader("accept", "application/json");
             getRequest.addHeader("x-els-apikey", tokenValue);
@@ -224,11 +218,18 @@ public class AuthorService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
-
 
     public Author save(Author author){
         return authorTrieRepository.save(author);
+    }
+
+    public Iterable<Author> findAll(){
+        return authorTrieRepository.findAll();
+    }
+
+    public Collection<Author> searchByQueryString(String queryString){
+        String[] names = queryString.split("[ -]");
+        return authorTrieRepository.searchAuthors(names);
     }
 }

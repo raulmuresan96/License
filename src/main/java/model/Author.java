@@ -57,4 +57,20 @@ public class Author {
                 ", firstname='" + firstname + '\'' +
                 '}';
     }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Author author = (Author) o;
+
+        return authorId != null ? authorId.equals(author.authorId) : author.authorId == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return authorId != null ? authorId.hashCode() : 0;
+    }
 }

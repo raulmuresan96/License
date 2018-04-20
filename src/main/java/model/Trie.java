@@ -18,7 +18,7 @@ public class Trie {
     }
 
     private void insert(TrieNode node, String word, int position, String wordId){
-        node.users.put(wordId, true);
+        node.authors.put(wordId, true);
         if(position == word.length()){
             //node.users.put(wordId, true);
             return;
@@ -37,7 +37,7 @@ public class Trie {
 
     public Collection<String> search(TrieNode node, String word, int position){
         if(position == word.length()){
-            return node.users.keySet();
+            return node.authors.keySet();
         }
         int currentLetter = word.charAt(position) - 'a';
         if(node.children[currentLetter] == null)

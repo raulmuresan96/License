@@ -8,11 +8,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class TrieNode {
     public TrieNode[] children;
-    public Map<String, Boolean> users;
+    public Map<String, Boolean> authors;
 
     public TrieNode(){
         children = new TrieNode[26];
-        users = new ConcurrentHashMap<>();
-
+        authors = new ConcurrentHashMap<>();
     }
 }

@@ -5,10 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import service.AuthorService;
 import service.InitService;
 import service.JournalService;
@@ -18,6 +15,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -85,6 +83,12 @@ public class InitController {
     public void addAuthors(){
         System.out.println("ajunge la adaugare de autori");
         authorService.init();
+    }
+
+
+    @RequestMapping(value = "author/{name}", method = RequestMethod.GET)
+    public Collection<Author> deleteUser(@PathVariable("name")String queryString){
+        return authorService.searchByQueryString(queryString);
     }
 
 
