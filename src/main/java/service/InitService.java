@@ -1,15 +1,6 @@
 package service;
 
-import model.Location;
-import model.Report;
-import model.Role;
-import model.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import repo.ReportRepository;
-import repo.UserRepository;
-
-import java.util.Date;
 
 @Service
 public class InitService {

@@ -10,8 +10,10 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import repo.AuthorTrieRepository;
+import repo.IAuthorRepository;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -26,23 +28,25 @@ import java.util.Set;
  * Created by Raul on 17/04/2018.
  */
 @Service
-public class AuthorService {
+    public class AuthorService {
 
-    @Autowired
-    private AuthorTrieRepository authorTrieRepository;
-    private String tokenValue = "", authorSearchByNameApiUrl = "", authorsUrl = "";
+        @Autowired
+        @Qualifier("parallelTrie")
+        private IAuthorRepository authorRepository;
+        //private AuthorTrieRepository authorTrieRepository;
+        private String tokenValue = "", authorSearchByNameApiUrl = "", authorsUrl = "";
 
-    public AuthorService() {
-        Properties properties = new Properties();
-        try {
-            properties.load(new FileReader("src/main/resources/config.info"));
-            tokenValue = properties.getProperty("x-els-apikey");
-            authorSearchByNameApiUrl = properties.getProperty("authorSearchByName");
-            authorsUrl = properties.getProperty("UBBAuthorsUrl");
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
+        public AuthorService() {
+            Properties properties = new Properties();
+            try {
+                properties.load(new FileReader("src/main/resources/config.info"));
+                tokenValue = properties.getProperty("x-els-apikey");
+                authorSearchByNameApiUrl = properties.getProperty("authorSearchByName");
+                authorsUrl = properties.getProperty("UBBAuthorsUrl");
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+            }
         }
-    }
 
     public  String getHTML(String urlToRead) throws Exception {
         StringBuilder result = new StringBuilder();
@@ -210,7 +214,6 @@ public class AuthorService {
             searchAuthors("Dr.", htmlText, authors);
             searchAuthors("Drd.", htmlText, authors);
 
-            //authors.forEach(System.out::println);
             authors.forEach(this::searchAuthorByName);
             //searchAuthorByName("Rusu Catalin");
             //searchAuthorByName("Mircea Ioan Gabriel");
@@ -221,15 +224,12 @@ public class AuthorService {
     }
 
     public Author save(Author author){
-        return authorTrieRepository.save(author);
-    }
-
-    public Iterable<Author> findAll(){
-        return authorTrieRepository.findAll();
+        return authorRepository.addAuthor(author);
     }
 
     public Collection<Author> searchByQueryString(String queryString){
-        String[] names = queryString.split("[ -]");
-        return authorTrieRepository.searchAuthors(names);
+        //String[] names = queryString.split("[ -]");
+        System.out.println();
+        return authorRepository.searchAuthorsByName(queryString);
     }
 }

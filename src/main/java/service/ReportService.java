@@ -1,17 +1,5 @@
 package service;
-import model.Report;
-import model.ReportsStatistics;
-import model.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import repo.ReportRepository;
-import repo.UserRepository;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.function.Predicate;
 
 @Service
 public class ReportService {

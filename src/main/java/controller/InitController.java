@@ -6,6 +6,7 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
+import repo.PopulateAuthorDbRepo;
 import service.AuthorService;
 import service.InitService;
 import service.JournalService;
@@ -31,6 +32,9 @@ public class InitController {
 
     @Autowired
     private JournalService journalService;
+
+    @Autowired
+    private PopulateAuthorDbRepo populateAuthorDbRepo;
 
     @Autowired
     private AuthorService authorService;
@@ -79,17 +83,22 @@ public class InitController {
         return ResponseEntity.ok("File succesfully uploaded");
     }
 
-    @RequestMapping(value = "/API/authors", method = RequestMethod.GET)
-    public void addAuthors(){
-        System.out.println("ajunge la adaugare de autori");
-        authorService.init();
+
+    @RequestMapping(value = "/populate", method = RequestMethod.POST)
+    public void populateDb(@RequestBody List<Author> authors){
+        populateAuthorDbRepo.addAll(authors);
     }
 
-
-    @RequestMapping(value = "author/{name}", method = RequestMethod.GET)
-    public Collection<Author> deleteUser(@PathVariable("name")String queryString){
-        return authorService.searchByQueryString(queryString);
+    @RequestMapping(value = "/connection", method = RequestMethod.GET)
+    public String checkconnection(){
+        System.out.println(Thread.currentThread().getName());
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return "ok";
+        //populateAuthorDbRepo.addAll(authors);
     }
-
 
 }

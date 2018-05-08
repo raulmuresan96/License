@@ -48,7 +48,7 @@ public class SearchTest {
                 String authorId = words[0];
                 String firstname = words[1];
                 String surname = words[2];
-                authorRepository.save(new Author(authorId, firstname, surname));
+                authorRepository.addAuthor(new Author(authorId, firstname, surname));
                 //System.out.println(authorId + " " + firstname + " " + surname);
             });
 
@@ -143,11 +143,10 @@ public class SearchTest {
             System.out.println(queryString);
             //searchAuthors(queryString);
             System.out.println(searchAuthors(queryString));
-            String[] names = new String[1];
-            names[0] = queryString;
-            System.out.println(authorRepository.searchAuthors(names));
 
-            assertTrue(identicalCollections(searchAuthors(queryString), authorRepository.searchAuthors(names)));
+            System.out.println(authorRepository.searchAuthorsByName(queryString));
+
+            assertTrue(identicalCollections(searchAuthors(queryString), authorRepository.searchAuthorsByName(queryString)));
             //System.out.println();
             //System.out.println(RandomGenerator.generateRandom(1, 8));
         }

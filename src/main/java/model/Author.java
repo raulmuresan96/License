@@ -1,7 +1,10 @@
 package model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.repository.cdi.Eager;
+
+import javax.persistence.*;
+import java.util.Collection;
 
 /**
  * Created by Raul on 16/04/2018.
@@ -15,8 +18,20 @@ public class Author {
     private String firstname;
 
 
+    @ManyToMany
+    @JoinTable(name = "author_publication",
+            joinColumns = { @JoinColumn(name = "author_id") },
+            inverseJoinColumns = { @JoinColumn(name = "publication_id") })
+    private Collection<Publication> publications;
+
+
     public Author(){
 
+    }
+
+    public Author(String authorId, String surname) {
+        this.authorId = authorId;
+        this.surname = surname;
     }
 
     public Author(String authorId, String surname, String firstname) {
@@ -47,6 +62,15 @@ public class Author {
 
     public void setFirstname(String firstname) {
         this.firstname = firstname;
+    }
+
+
+    public Collection<Publication> getPublications() {
+        return publications;
+    }
+
+    public void setPublications(Collection<Publication> publications) {
+        this.publications = publications;
     }
 
     @Override
