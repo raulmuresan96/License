@@ -38,6 +38,10 @@ public class JournalService {
         }
     }
 
+    public Journal findOne(String issn){
+        return journalRepository.findOne(issn);
+    }
+
     public Iterable<Journal> getAllJournals(){
         return journalRepository.findAll();
     }
@@ -118,7 +122,7 @@ public class JournalService {
         currentCategory = journalCategory;
     }
 
-    public void getDataForJournal(String issn, String category){
+    public void getDataForJournalFromScopus(String issn, String category){
 
         try {
             System.out.println(journalApiUrl + issn);
@@ -146,7 +150,7 @@ public class JournalService {
                 //System.out.println(jo.entrySet());
                 String journaltitle = jo.get("serial-metadata-response").getAsJsonObject().get("entry").getAsJsonArray().get(0).getAsJsonObject()
                         .get("dc:title").getAsString();
-                journalRepository.save(new Journal(issn, category, journaltitle));
+                //journalRepository.save(new Journal(issn, category, journaltitle));
             }
             conn.disconnect();
 
@@ -216,19 +220,19 @@ public class JournalService {
             categoryMap.put("C", new HashSet<>());
 
             journalCategoryMap.forEach((issn, integerCategory) -> {
-                categoryMap.get(convertIntegerToCategory(integerCategory)).add(issn);
-                //System.out.println(issn + " " + integerCategory);
-                getDataForJournal(issn, convertIntegerToCategory(integerCategory));
+                String category = convertIntegerToCategory(integerCategory);
+                categoryMap.get(category).add(issn);
+                journalRepository.save(new Journal(issn, category));
+                System.out.println(issn + " " + category);
+                //getDataForJournal(issn, convertIntegerToCategory(integerCategory));
 
             });
 
+            System.out.println("WORKDSSSSS");
             categoryMap.forEach((category, issn) -> {
                 System.out.println(category + " " + issn.size() + " " + issn);
-
             });
-
             //getDataForJournal("0305-4403", convertIntegerToCategory(1));
-
         } catch (IOException e) {
             System.out.println(e.getMessage());
             // TODO Auto-generated catch block

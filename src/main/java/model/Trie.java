@@ -25,10 +25,16 @@ public class Trie {
         }
 
         int currentLetter = word.charAt(position) - 'a';
-        if(node.children[currentLetter] == null){
-            node.children[currentLetter] = new TrieNode();
+
+        if(!node.children.containsKey(currentLetter)){
+            node.children.putIfAbsent(currentLetter,  new TrieNode());
         }
-        insert(node.children[currentLetter], word, position + 1, wordId);
+        insert(node.children.get(currentLetter), word, position + 1, wordId);
+
+//        if(node.children[currentLetter] == null){
+//            node.children[currentLetter] = new TrieNode();
+//        }
+//        insert(node.children[currentLetter], word, position + 1, wordId);
     }
 
     public Collection<String> search(String word){
@@ -40,9 +46,9 @@ public class Trie {
             return node.authors.keySet();
         }
         int currentLetter = word.charAt(position) - 'a';
-        if(node.children[currentLetter] == null)
+        if(!node.children.containsKey(currentLetter))
             return new HashSet<>();
-        return search(node.children[currentLetter], word, position + 1);
+        return search(node.children.get(currentLetter), word, position + 1);
     }
 
     public TrieNode getNodeForString(String username){
@@ -54,9 +60,9 @@ public class Trie {
             return node;
         }
         int currentLetter = word.charAt(position) - 'a';
-        if(node.children[currentLetter] == null)
+        if(!node.children.containsKey(currentLetter))
             return null;
-        return getNodeForString(node.children[currentLetter], word, position + 1);
+        return getNodeForString(node.children.get(currentLetter), word, position + 1);
 
     }
 }

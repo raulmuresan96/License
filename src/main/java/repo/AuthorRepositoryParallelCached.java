@@ -7,11 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Stream;
 
 /**
  * Created by Raul on 08/05/2018.
@@ -29,23 +33,84 @@ public class AuthorRepositoryParallelCached implements IAuthorRepository {
     private ReadWriteLock treeMapReadWriteLock = new ReentrantReadWriteLock();
     private AtomicInteger operationCounter;
 
-    @PostConstruct
+    //@PostConstruct
     public void init(){
+        populateDB();
         authors = new ConcurrentHashMap<>();
         authorsIds = new ConcurrentHashMap<>();
+
         authorRepository.searchAuthors().forEach(author ->{
             authors.put(author, true);
             authorsIds.put(author.getAuthorId(), author);
         });
-        operationCounter = new AtomicInteger(1);
+        operationCounter = new AtomicInteger(0);
         operations = new TreeMap<>();
-        System.out.println(authors);
+
+
+        ExecutorService cacheCleaningExecutorService =  Executors.newSingleThreadExecutor();
+//        cacheCleaningExecutorService.submit(()->{
+//            Date date = new Date();
+//            try {
+//                while(true){
+//                    //System.out.println(date.getTime());
+//                    long startTime = new Date().getTime();
+//                    System.out.println("Iterating Cache Size: " + cache.size());
+//                    for(Map.Entry<String, Future<CacheCell>> entry: cache.entrySet()){
+//
+//                        String key = entry.getKey();
+//                        Future<CacheCell> value = entry.getValue();
+//                        if(value.isDone()){
+//                            try {
+//                                CacheCell cacheCell = value.get();
+//                                //System.out.println("CACHE: " + key + " " +cacheCell.getUsers() + " " + cache.size());
+//                                //System.out.println(new Date().getTime() - cacheCell.getLastTimeQueried());
+//                                //System.out.println(startTime - cacheCell.getLastTimeQueried());
+//                                if(startTime - cacheCell.getLastTimeQueried() > 8000){
+//                                    //the remove operation can fail if meanwhile a query for the key was executed
+//                                    //and the removal is no longer needed
+//                                    cache.remove(key, value);
+//                                    //System.out.println(cache.remove(key, value));
+//                                }
+//
+//                            } catch (ExecutionException e) {
+//                                e.printStackTrace();
+//                            }
+//
+//                        }
+//                    }
+//                    Thread.sleep(10000);
+//
+//                }
+//            }
+//            catch (InterruptedException exception){
+//                System.out.println("");
+//            }
+//
+//            System.out.println("works fine");
+//        });
+
+        //System.out.println(authors);
+    }
+
+    private void populateDB(){
+        authorRepository.deleteAll();
+        String fileName = "src/main/resources/users.txt";
+        try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
+            stream.forEach(line ->{
+                String[] splitResult = line.split(" ");
+                //System.out.println(splitResult[0] + " " + splitResult[1] + " " + splitResult[2]);
+                authorRepository.save(new Author(splitResult[0], splitResult[1], splitResult[2]));
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(authorRepository.count());
     }
 
     @Override
     public Author addAuthor(Author author) {
-        if(authors.containsKey(author))
-            return null;
+//        if(authors.containsKey(author))
+//            return null;
         System.out.println("Add " + author);
         authorRepository.save(author);
         authors.put(author, true);
@@ -55,7 +120,7 @@ public class AuthorRepositoryParallelCached implements IAuthorRepository {
 
         Operation operation = new Operation("Add", author);
 
-        operations.put(operationCounter.getAndIncrement(), operation);
+        operations.put(operationCounter.incrementAndGet(), operation);
         treeMapReadWriteLock.writeLock().unlock();
         return null;
     }
@@ -69,7 +134,7 @@ public class AuthorRepositoryParallelCached implements IAuthorRepository {
                 searchResult.add(author.getAuthorId());
             }
         }
-        return new CacheCell(currentUpdate, searchResult);
+        return new CacheCell(currentUpdate, searchResult, new Date().getTime());
     }
 
     //CacheCell contains the moment when the last update was made
@@ -92,7 +157,7 @@ public class AuthorRepositoryParallelCached implements IAuthorRepository {
         }
         treeMapReadWriteLock.readLock().unlock();
 
-        return new CacheCell(currentOperationCount, authors);
+        return new CacheCell(currentOperationCount, authors, new Date().getTime());
     }
 
 
@@ -111,6 +176,7 @@ public class AuthorRepositoryParallelCached implements IAuthorRepository {
                 }
             }
             else{
+                System.out.println("Update Cache " + searchString);
                 try {
 
                     CacheCell cacheCell = f.get();
@@ -127,9 +193,17 @@ public class AuthorRepositoryParallelCached implements IAuthorRepository {
                 }
             }
             try {
-                CacheCell cacheCell = f.get();
+                //CacheCell cacheCell = f.get();
 
-                return cacheCell.getUsers();
+                Future<CacheCell> cacheCellFuture = cache.get(searchString);
+                //CacheCell cacheCell = cache.get(searchString).get();
+                if(cacheCellFuture == null){
+                    System.out.println("CACHE REMOVING WORKS");
+                    //throw  new CancellationException("kfjnf");
+                    return null;
+                }
+
+                return cacheCellFuture.get().getUsers();
             } catch (CancellationException e) {
                 cache.remove(searchString, f);
             } catch (ExecutionException e) {

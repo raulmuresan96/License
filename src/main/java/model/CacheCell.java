@@ -8,9 +8,11 @@ import java.util.Set;
 public class CacheCell {
     private int lastUpdate;
     private Set<String> authors;
-    public CacheCell(int lastUpdate, Set<String> authors){
+    private long lastTimeQueried;
+    public CacheCell(int lastUpdate, Set<String> authors, long lastTimeQueried){
         this.lastUpdate = lastUpdate;
         this.authors = authors;
+        this.lastTimeQueried = lastTimeQueried;
     }
 
 
@@ -28,6 +30,14 @@ public class CacheCell {
 
     public void setUsers(Set<String> users) {
         this.authors = authors;
+    }
+
+    public long getLastTimeQueried() {
+        return lastTimeQueried;
+    }
+
+    public void setLastTimeQueried(long lastTimeQueried) {
+        this.lastTimeQueried = lastTimeQueried;
     }
 
     @Override

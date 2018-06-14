@@ -28,10 +28,16 @@ import java.util.Set;
  * Created by Raul on 17/04/2018.
  */
 @Service
-    public class AuthorService {
+public class AuthorService {
 
         @Autowired
-        @Qualifier("parallelTrie")
+        //@Qualifier("parallelTrie")
+        //@Qualifier("parallelCached")
+        //@Qualifier("trieCached")
+        //@Qualifier("database")
+        //@Qualifier("parallel")
+        @Qualifier("kmp")
+
         private IAuthorRepository authorRepository;
         //private AuthorTrieRepository authorTrieRepository;
         private String tokenValue = "", authorSearchByNameApiUrl = "", authorsUrl = "";

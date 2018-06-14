@@ -3,11 +3,17 @@ package start;
 import model.Author;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Raul on 09/03/2018.
@@ -29,7 +35,7 @@ public class RandomGenerator {
     }
 
     public static String generateUser() {
-        return RandomGenerator.generateRandomString(8, 12);
+        return RandomGenerator.generateRandomString(3, 10);
     }
 
     public static List<String> generateSearchStrings(int k){
@@ -44,8 +50,7 @@ public class RandomGenerator {
     public static void populateFiles(int usersCount, int queriesCount){
         List<String> users = new ArrayList<>();
         //Using words from Scrabble List
-
-//        try (Stream<String> lines = Files.lines(Paths.get("/Users/Raul/Desktop/ProgramareParalelaSem6/src/com/company/ScrabbleWords.txt"), Charset.defaultCharset())) {
+//        try (Stream<String> lines = Files.lines(Paths.get("src/main/resources/ScrabbleWords.txt"), Charset.defaultCharset())) {
 //            //nrQueries = (int)lines.count();
 //            users = lines.map(String::toLowerCase).collect(Collectors.toList());
 ////            long numOfLines = lines.count();
@@ -53,17 +58,18 @@ public class RandomGenerator {
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-//
-//
-//        try ( PrintWriter writer = new PrintWriter("/Users/Raul/Desktop/ProgramareParalelaSem6/src/com/company/users.txt", "UTF-8");) {
-//            for(String user: users){
-//                writer.write(user + "\n");
+//        try ( PrintWriter writer = new PrintWriter("src/main/resources/users.txt", "UTF-8");) {
+//            int count = 0;
+//            for (String string: users){
+//                writer.write(Integer.toString(count++) + " " + string + " " + string + "\n");
 //            }
-//        } catch (FileNotFoundException e) {
+//        }catch (FileNotFoundException e) {
 //            e.printStackTrace();
 //        } catch (UnsupportedEncodingException e) {
 //            e.printStackTrace();
 //        }
+
+
         try ( PrintWriter writer = new PrintWriter("src/main/resources/users.txt", "UTF-8");) {
             for(int i = 0; i < usersCount; i++){
                 String firstame = RandomGenerator.generateUser();
@@ -83,11 +89,11 @@ public class RandomGenerator {
         try (PrintWriter writer = new PrintWriter("src/main/resources/query.txt", "UTF-8");) {
             for(int i = 0; i < queriesCount; i++){
                 double randomDouble = random.nextDouble();
-                if(randomDouble > 0.4){
+                if(randomDouble > 0.5){
                     int randomInt = random.nextInt(50);
                     String string = users.get(randomInt);
                    // System.out.println(string.length());
-                    int randomLength = random.nextInt(string.length() - 3);
+                    int randomLength = random.nextInt(string.length() - 2);
                     writer.write("GET " + users.get(randomInt).substring(randomLength) + "\n");
                     // System.out.println("GET " + searchStrings.get(randomInt));
                     //System.out.println( + " " +  searchEngine.search(searchStrings.get(randomInt)));
@@ -102,7 +108,7 @@ public class RandomGenerator {
                 }
                 else{
                     //searchEngineSerial.searchUser(RandomGenerator.generateRandomString(2, 3));
-                    String searchWord = RandomGenerator.generateRandomString(2, 3);
+                    String searchWord = RandomGenerator.generateRandomString(3, 3);
                     //searchEngine.search(searchWord);
                     //System.out.println("GET " + searchWord);
                     writer.write("GET " + searchWord + "\n");
@@ -165,7 +171,6 @@ public class RandomGenerator {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-
 //        PrintWriter writer = null;
 //        try {
 //            writer = new PrintWriter("/Users/Raul/Desktop/ProgramareParalelaSem6/src/com/company/users.txt", "UTF-8");

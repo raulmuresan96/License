@@ -29,8 +29,9 @@ public class AuthorRepositoryTrieCached implements IAuthorRepository {
     private Map<Author, Boolean> authors;
     private AtomicInteger nextAvailableId;
 
-    @PostConstruct
+    //@PostConstruct
     public void init(){
+        populateDB();
         authors = new ConcurrentHashMap<>();
         authorsIds = new ConcurrentHashMap<>();
         trie = new Trie();
@@ -38,11 +39,26 @@ public class AuthorRepositoryTrieCached implements IAuthorRepository {
         populateTrie();
     }
 
+    private void populateDB(){
+        authorRepository.deleteAll();
+        String fileName = "src/main/resources/users.txt";
+        try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
+            stream.forEach(line ->{
+                String[] splitResult = line.split(" ");
+                //System.out.println(splitResult[0] + " " + splitResult[1] + " " + splitResult[2]);
+                authorRepository.save(new Author(splitResult[0], splitResult[1], splitResult[2]));
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(authorRepository.count());
+    }
+
     public void populateTrie(){
         //System.out.println(authorRepository.searchAuthors());
         Iterable<Author> iterable = authorRepository.searchAuthors();
         //4Iterable<Author> iterable = authorRepository.findAll();
-        System.out.println(iterable);
+        //System.out.println(iterable);
         trie = new Trie();
 
 
@@ -117,8 +133,8 @@ public class AuthorRepositoryTrieCached implements IAuthorRepository {
 
     @Override
     public Author addAuthor(Author author){
-        if(authors.containsKey(author))
-            return null;
+//        if(authors.containsKey(author))
+//            return null;
         Author result = authorRepository.save(author);
         String currentId = author.getAuthorId();
         authors.put(author, true);

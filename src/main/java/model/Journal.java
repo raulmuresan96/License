@@ -21,6 +21,11 @@ public class Journal {
         this.title = name;
     }
 
+    public Journal(String issn, String category) {
+        this.issn = issn;
+        this.category = category;
+    }
+
     public Journal(){
 
     }
@@ -47,5 +52,14 @@ public class Journal {
 
     public void setName(String name) {
         this.title = name;
+    }
+
+    @Override
+    public String toString() {
+        return "Journal{" +
+                "issn='" + issn + '\'' +
+                ", title='" + title + '\'' +
+                ", category='" + category + '\'' +
+                '}';
     }
 }

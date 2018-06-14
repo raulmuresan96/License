@@ -37,9 +37,7 @@ public class SearchRestClient {
         return queries;
     }
 
-    public static void populateFiles(){
-        int usersCount = 10_000;
-        int queriesCount = 100_000;
+    public static void populateFiles(int usersCount, int queriesCount){
         RandomGenerator.populateFiles(usersCount,queriesCount);
     }
 
@@ -47,17 +45,18 @@ public class SearchRestClient {
     public static void populateDB(){
         String fileName = "src/main/resources/users.txt";
         List<Author> authors = new ArrayList<>();
-        try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
-            stream.forEach(line ->{
-                String[] splitResult = line.split(" ");
-                authors.add(new Author(splitResult[0], splitResult[1], splitResult[2]));
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try (Stream<String> stream = Files.lines(Paths.get(fileName))) {
+//            stream.forEach(line ->{
+//                String[] splitResult = line.split(" ");
+//                authors.add(new Author(splitResult[0], splitResult[1], splitResult[2]));
+//            });
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         System.out.println(authors.size());
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.postForObject("http://localhost:8080/API/init/populate", authors, Object.class);
+        System.out.println("Finished populating DB");
     }
 
 
@@ -142,12 +141,7 @@ public class SearchRestClient {
         System.out.println(elapsedTime);
     }
 
-
     public static void main(String[] args) {
-
-
-
-
 //        Logger logger = LogManager.getRootLogger();
 //        logger.removeAppender("CONSOLE"); // stops console logging
 
@@ -156,9 +150,22 @@ public class SearchRestClient {
 //        ResponseEntity<List> response = restTemplate.getForEntity("http://localhost:8080/author/xuu", List.class);
 //        List<String> list = (List<String>)response.getBody();
 //        System.out.println(list);
-        //populateFiles();
-        //populateDB();
-        executeQueries();
+        int usersCount = 1_000;
+        int queriesCount = 1_000;
+        populateFiles(usersCount, queriesCount);
+
+        //executeQueries();
+//        List<String> list = new ArrayList<>();
+//        try (Stream<String> lines = Files.lines(Paths.get("src/main/resources/ScrabbleWords.txt"), Charset.defaultCharset())) {
+//            //nrQueries = (int)lines.count();
+//
+//            list = lines.map(String::toLowerCase).collect(Collectors.toList());
+////            long numOfLines = lines.count();
+////            System.out.println(numOfLines);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        System.out.println(list);
 
 
         //int nrThreads = 8;

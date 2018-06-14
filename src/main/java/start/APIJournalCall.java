@@ -23,8 +23,8 @@ import java.net.URL;
 public class APIJournalCall {
 
 
-    @Autowired
-    private static JournalService journalService;
+    //@Autowired
+    private static JournalService journalService = new JournalService();
 
     public static void main(String[] args) {
         System.out.println("merge bine");
@@ -56,13 +56,13 @@ public class APIJournalCall {
 //                System.out.println(jo.get("serial-metadata-response").getAsJsonObject().get("entry").getAsJsonArray().get(0).getAsJsonObject()
 //                .get("dc:title"));
             }
-            System.out.println(journalService);
+            //System.out.println(journalService);
+            journalService.getJournalsFromFile();
 
             conn.disconnect();
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
-
         } catch (IOException e) {
             e.printStackTrace();
         }

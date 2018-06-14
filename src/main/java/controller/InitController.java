@@ -42,10 +42,10 @@ public class InitController {
     @Autowired
     private InitService service;
 
-    @RequestMapping(method = RequestMethod.GET)
-    public void init(){
-        journalService.populateFromFile();
-    }
+//    @RequestMapping(method = RequestMethod.GET)
+//    public void init(){
+//        journalService.populateFromFile();
+//    }
 
     @RequestMapping(value = "/API/string", method = RequestMethod.GET)
     public List<String> getAllReportsByUser(){
@@ -78,7 +78,6 @@ public class InitController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
 
         return ResponseEntity.ok("File succesfully uploaded");
     }

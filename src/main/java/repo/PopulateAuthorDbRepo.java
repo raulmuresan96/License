@@ -19,18 +19,6 @@ public class PopulateAuthorDbRepo {
     private AuthorRepository authorRepository;
 
 
-
-//    @Autowired
-//    public PopulateAuthorDbRepo(AuthorRepository authorRepository) {
-//        this.authorRepository = authorRepository;
-//    }
-
-    @PostConstruct
-    public void init(){
-        //authorRepository.sa
-        System.out.println("AJUNGE LA INIT " + authorRepository);
-    }
-
     public void addAll(List<Author> authors){
         authorRepository.deleteAll();
         authorRepository.save(authors);

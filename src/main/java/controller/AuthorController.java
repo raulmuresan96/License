@@ -33,7 +33,7 @@ public class AuthorController {
 
         long stopTime = System.nanoTime();
         long elapsedTime = stopTime - startTime;;
-        System.out.println("GET " + elapsedTime + " " + queryString + " " + result.size());
+        System.out.println("GET " + elapsedTime + " " + queryString + " " + result);
         return result;
     }
 
