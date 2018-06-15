@@ -183,7 +183,6 @@ public class RandomGenerator {
 //        } catch (UnsupportedEncodingException e) {
 //            e.printStackTrace();
 //        }
-
     }
 
 }

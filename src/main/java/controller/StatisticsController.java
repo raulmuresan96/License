@@ -27,13 +27,12 @@ public class StatisticsController {
 
     private String publicationFileName = "src/main/resources/pub.csv";
     private String citationFileName = "src/main/resources/cit.csv";
-    private String pythonFile = "src/main/java/start/generateScientificProduction.py";
-    private List<String> categoryAPapers = new ArrayList<>();
-    private List<String> categoryBPapers = new ArrayList<>();
-    private List<String> categoryCPapers = new ArrayList<>();
-    private List<Integer> categoryAPoints = new ArrayList<>();
-    private List<Integer> categoryBPoints = new ArrayList<>();
-    private List<Integer> categoryCPoints = new ArrayList<>();
+    private String generateScientificProductionFile = "src/main/java/start/generateScientificProduction.py";
+    private String resultImpactFile = "src/main/java/start/generateResultImpact.py";
+
+    private Map<String, List<String>> publicationsMap;
+    private Map<String, List<String>> citationsMap;
+    private Map<Integer, List<String>> citedPublications;
 
 
 
@@ -64,8 +63,17 @@ public class StatisticsController {
 
 
     private void generateScientificProductionPDF(List<String>  publicationLineList){
+
+       List<String> categoryAPapers = new ArrayList<>();
+       List<String> categoryBPapers = new ArrayList<>();
+       List<String> categoryCPapers = new ArrayList<>();
+       List<Integer> categoryAPoints = new ArrayList<>();
+       List<Integer> categoryBPoints = new ArrayList<>();
+       List<Integer> categoryCPoints = new ArrayList<>();
+
         //StringBuilder publicationInformation = new StringBuilder();
-        getPublicationDataForPrinting(publicationLineList.size() - 1);
+        getPublicationDataForPrinting(publicationLineList.size() - 1,
+                categoryAPapers, categoryBPapers, categoryCPapers, categoryAPoints, categoryBPoints, categoryCPoints);
 
         List<String> pythonScriptsArguments = new ArrayList<>();
 
@@ -93,7 +101,7 @@ public class StatisticsController {
         pythonScriptsArguments.add(categoryCString.toString().replace(' ', '$'));
         pythonScriptsArguments.add(categoryCPoints.toString().replace(' ', '$'));
 
-        executePythonScript(pythonFile, pythonScriptsArguments);
+        executePythonScript(generateScientificProductionFile, pythonScriptsArguments);
 
 
 //        System.out.println(categoryAPapers);
@@ -102,10 +110,7 @@ public class StatisticsController {
         System.out.println(pythonScriptsArguments);
 
         //String categoryA
-
-
         //.forEach(publication -> publicationInformation.append(publication).append("#"));
-
 
 
 //        getPublicationDataForPrinting(publicationLineList.size() - 1).forEach(publication -> publicationInformation.append(publication).append("#"));
@@ -133,6 +138,47 @@ public class StatisticsController {
         generateScientificProductionPDF(publicationLineList);
 
 
+        citedPublications = getAllCitedPublications();
+//
+        populateCitedPublicationsMap();
+
+
+        System.out.println("!!!!!!!!!!!");
+        //System.out.println(citedPublications);
+        StringBuilder citationsString = new StringBuilder();
+        citedPublications.forEach((key, value) ->{
+            if(value.size() > 0){
+
+                String publicationInformation = publicationsMap.get("\uFEFFAuthors").get(key) + "," + publicationsMap.get("Title").get(key) + "," + publicationsMap.get("Source title").get(key);
+                StringBuilder stringBuilder = new StringBuilder(publicationInformation);
+                stringBuilder.append("=");
+                //System.out.println(publicationInformation + "\n");
+                for(String citation: value){
+                    stringBuilder.append(citation);
+                    stringBuilder.append("@");
+                }
+                eliminateLastSpecificCharacter(stringBuilder);
+                citationsString.append(stringBuilder);
+                citationsString.append("%");
+                System.out.println(stringBuilder);
+            }
+
+        });
+        eliminateLastSpecificCharacter(citationsString);
+        System.out.println(citationsString.toString());
+
+        List<String> arguments = new ArrayList<>();
+        arguments.add(citationsString.toString().replace(' ', '$'));
+        executePythonScript(resultImpactFile, arguments);
+
+
+//
+//        //System.out.println(citationsMap.get("References").get(0));
+//        for(String reference: citationsMap.get("References")){
+//            //System.out.println(reference);
+//        }
+//
+
 
         return ResponseEntity.ok("File succesfully uploaded");
         //return (ResponseEntity<?>) ResponseEntity.badRequest();
@@ -157,9 +203,7 @@ public class StatisticsController {
 //        return ResponseEntity.ok("File succesfully uploaded");
 
 
-     Map<String, List<String>> publicationsMap;
-     Map<String, List<String>> citationsMap;
-     Map<Integer, List<String>> citedPublications;
+
 
     private  List<String> parseLineFromCSV(String line){
         int index = 0;
@@ -213,7 +257,10 @@ public class StatisticsController {
         return lineList;
     }
 
-    public  List<String> getPublicationDataForPrinting(int nrPublications){
+
+
+    public  List<String> getPublicationDataForPrinting(int nrPublications, List<String> categoryAPapers, List<String> categoryBPapers, List<String> categoryCPapers,
+                                                       List<Integer> categoryAPoints, List<Integer> categoryBPoints, List<Integer> categoryCPoints){
         List<String> list = new ArrayList<>();
         for(int i = 0; i < nrPublications; i++){
             String issn = publicationsMap.get("ISSN").get(i);
@@ -235,8 +282,6 @@ public class StatisticsController {
                         categoryCPapers.add(publicationsMap.get("\uFEFFAuthors").get(i) + "," + publicationsMap.get("Title").get(i) + "," + publicationsMap.get("Source title").get(i));
                         categoryCPoints.add(1);
                     }
-                    //System.out.println("Categorie " + );
-                    //System.out.println(journal.getCategory() + " " + publicationsMap.get("Title").get(i));
                 }
             }
 
@@ -314,7 +359,8 @@ public class StatisticsController {
         return map;
     }
 
-    private  void populateCitedPublicationsMap() {
+
+    private void populateCitedPublicationsMap() {
 
         for(int currentPublication: citedPublications.keySet()){
             //System.out.println(currentPublication);
@@ -323,60 +369,76 @@ public class StatisticsController {
 
             for(int i = 0; i < citationsMap.get("References").size(); i++){
                 if(citationsMap.get("References").get(i).contains(title)){
-                    System.out.println("Found match ");
-                    citedPublications.get(currentPublication).add(citationsMap.get("Title").get(i));
+                    String issn = citationsMap.get("ISSN").get(i);
+                    if(issn.length() == 0)
+                        continue;
+                    issn = issn.substring(0, 4) + "-" + issn.substring(4);
+                    Journal journal = journalService.findOne(issn);
+                    if(journal == null)
+                        continue;
+                    String category =  journal.getCategory();
+                    //System.out.println("Found match " + citationsMap.get("ISSN").get(i).length());
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append(citationsMap.get("\uFEFFAuthors").get(i));
+                    stringBuilder.append(",");
+                    stringBuilder.append(citationsMap.get("Title").get(i));
+                    stringBuilder.append(",");
+                    stringBuilder.append(citationsMap.get("Source title").get(i));
+
+                    stringBuilder.append("#");
+                    stringBuilder.append(category);
+                    stringBuilder.append("#");
+                    stringBuilder.append(5);
+
+                    //String citationInformation =   + "," + citationsMap.get().get(i);
+                    citedPublications.get(currentPublication).add(stringBuilder.toString());
                 }
             }
-            //break;
         }
-
     }
 
-
-
-
-    public  void main(String[] args) {
-        String csvPublicationFile = "src/main/resources/publication.csv";
-        String csvCitationFile = "src/main/resources/citation.csv";
-
-
-        List<String> publicationLineList = readCSVFile(csvPublicationFile);
-        List<String> citationLineList = readCSVFile(csvCitationFile);
-
-        List<String> publicationLabels = parseLineFromCSV(publicationLineList.get(0));
-        List<String> citationLabels = parseLineFromCSV(citationLineList.get(0));
-
-        publicationsMap = buildMap(publicationLabels, publicationLineList);
-        citationsMap = buildMap(citationLabels, citationLineList);
-
-        StringBuilder publicationInformation = new StringBuilder();
-        getPublicationDataForPrinting(publicationLineList.size() - 1).forEach(publication -> publicationInformation.append(publication).append("#"));
-        publicationInformation.deleteCharAt(publicationInformation.length() - 1);
-        System.out.println(publicationInformation);
-        //executePythonScript(pythonFile, publicationInformation.toString().replace(' ', '$'));
-
-        citedPublications = getAllCitedPublications();
-
-        populateCitedPublicationsMap();
-
-        //System.out.println(citationsMap.get("References").get(0));
-        for(String reference: citationsMap.get("References")){
-            //System.out.println(reference);
-        }
-
-
-        System.out.println();
-
-        citationsMap.get("References").forEach(System.out::println);
-        System.out.println(citationsMap.get("References"));
-        citedPublications.forEach((key, value) ->{
-            System.out.println(publicationsMap.get("Title").get(key) + " " + value);
-        });
-        System.out.println(citationsMap.get("References").get(144).length());
-        //System.out.println(citedPublications);
-        //System.out.println(publicationsMap);
-        System.out.println(citedPublications);
-    }
+//    public  void main(String[] args) {
+//        String csvPublicationFile = "src/main/resources/publication.csv";
+//        String csvCitationFile = "src/main/resources/citation.csv";
+//
+//
+//        List<String> publicationLineList = readCSVFile(csvPublicationFile);
+//        List<String> citationLineList = readCSVFile(csvCitationFile);
+//
+//        List<String> publicationLabels = parseLineFromCSV(publicationLineList.get(0));
+//        List<String> citationLabels = parseLineFromCSV(citationLineList.get(0));
+//
+//        publicationsMap = buildMap(publicationLabels, publicationLineList);
+//        citationsMap = buildMap(citationLabels, citationLineList);
+//
+//        StringBuilder publicationInformation = new StringBuilder();
+//        getPublicationDataForPrinting(publicationLineList.size() - 1).forEach(publication -> publicationInformation.append(publication).append("#"));
+//        publicationInformation.deleteCharAt(publicationInformation.length() - 1);
+//        System.out.println(publicationInformation);
+//        //executePythonScript(pythonFile, publicationInformation.toString().replace(' ', '$'));
+//
+//        citedPublications = getAllCitedPublications();
+//
+//        populateCitedPublicationsMap();
+//
+//        //System.out.println(citationsMap.get("References").get(0));
+//        for(String reference: citationsMap.get("References")){
+//            //System.out.println(reference);
+//        }
+//
+//
+//        System.out.println();
+//
+//        citationsMap.get("References").forEach(System.out::println);
+//        System.out.println(citationsMap.get("References"));
+//        citedPublications.forEach((key, value) ->{
+//            System.out.println(publicationsMap.get("Title").get(key) + " " + value);
+//        });
+//        System.out.println(citationsMap.get("References").get(144).length());
+//        //System.out.println(citedPublications);
+//        //System.out.println(publicationsMap);
+//        System.out.println(citedPublications);
+//    }
 
 
 

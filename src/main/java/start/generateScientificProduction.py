@@ -30,7 +30,7 @@ def buildCategoryTable(category, articleList, punctajList):
     data.append([lastRowParagraphLeft, lastRowParagraphRight])
 
 
-    nrRows = 2 + len(articleList) + 1
+    nrRows = 3 + len(articleList)
     #print (nrRows)
     rowHeights = [0] * nrRows
     rowHeights[0] = 32
@@ -99,39 +99,72 @@ pdfmetrics.registerFont(TTFont("Verdana-Italic", "Verdana Italic.ttf"))
 print ('This is Python')
 
 
-#input = sys.argv[1]
-#input = input.strip('[]')
-publicationInformation = sys.argv[1]
-publicationInformation = publicationInformation.strip('[]')
+def parsePointsArguments(string, splitCharacter):
 
-publicationInformation = publicationInformation.replace('$', ' ')
-publicationList = publicationInformation.split("#");
+    string = string.strip('[]')
+    string = string.replace('$', ' ')
+    string = string.replace(' ', '')
+
+    stringList = string.split(splitCharacter)
+    return stringList
+    #return map(int, stringList)
+    #categoryAPoints = categoryAPoints.replace('$', ' ')
+
+def parsePaperArguments(string, splitCharacter):
+
+    string = string.strip('[]')
+    string = string.replace('$', ' ')
+    stringList = string.split(splitCharacter)
+    return stringList
+
+
+categoryAInformation = sys.argv[1]
+categoryAInformation = categoryAInformation.strip('[]')
+
+categoryAInformation = categoryAInformation.replace('$', ' ')
+categoryAPaperList = categoryAInformation.split("#");
 #print(publicationList[8] + "mkmm")
 
 doc = SimpleDocTemplate("src/main/resources/FirstPDF.pdf", pagesize=A4)
 
 elements = []
-#styleSheet = getSampleStyleSheet()
 styles = getSampleStyleSheet()
+
+print(categoryAPaperList)
+print('!!!!!!!!')
+categoryAPoints = parsePointsArguments(sys.argv[2], ",")
+categoryBPoints = parsePointsArguments(sys.argv[4], ",")
+categoryCPoints = parsePointsArguments(sys.argv[6], ",")
+
+categoryAPoints = [int(x) for x in categoryAPoints if x]
+categoryBPoints = [int(x)  for x in categoryBPoints if x]
+categoryCPoints = [int(x)  for x in categoryCPoints if x]
+print (categoryCPoints)
+
+
+categoryAPaperList = parsePaperArguments(sys.argv[1], "#")
+categoryBPaperList = parsePaperArguments(sys.argv[3], "#")
+categoryCPaperList = parsePaperArguments(sys.argv[5], "#")
+
+categoryAPaperList = [x for x in categoryAPaperList if x]
+categoryBPaperList = [x for x in categoryBPaperList if x]
+categoryCPaperList = [x for x in categoryCPaperList if x]
 
 
 
 elements.append(buildStatisticsTable("Mircea Gabriel", 100, 65))
 elements.append(Spacer(1, 24))
-elements.append(buildCategoryTable("A", publicationList, [0] * len(publicationList)))
+elements.append(buildCategoryTable("A", categoryAPaperList, categoryAPoints))
 elements.append(Spacer(1, 24))
-
+elements.append(buildCategoryTable("B", categoryBPaperList, categoryBPoints))
+elements.append(Spacer(1, 24))
+elements.append(buildCategoryTable("C", categoryCPaperList, categoryCPoints))
 
 
 
 doc.build(elements)
 
 
-#print(int(sys.argv[1]) + int(sys.argv[2]))
-
-
-print('THIS IS PYTHON')
-print(len(sys.argv))
 
 print(sys.argv[1])
 print(sys.argv[2])

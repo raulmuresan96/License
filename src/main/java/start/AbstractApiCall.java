@@ -52,7 +52,6 @@ public class AbstractApiCall {
     }
 
     public static void main(String[] args) {
-
         Properties properties = new Properties();
         String tokenValue = "";
         try {
