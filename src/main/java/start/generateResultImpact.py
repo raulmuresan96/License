@@ -3,9 +3,6 @@ from reportlab.platypus import Spacer
 from reportlab.platypus import KeepTogether
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-
-
-
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, inch, A4
 from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Table, TableStyle
@@ -26,13 +23,15 @@ def buildCategoryTable(article, citedList, categoryList, punctajList, data, tabl
     while j < len(citedList):
         jAtBeginning = j
 
+        #font name = Arial
+
         for k in range(j, min(len(citedList), j + 5)):
             print k
-            p1 = Paragraph(text="<para alignment=left><font color=black size=8>" + citedList[k] + "</font>",
+            p1 = Paragraph(text="<para alignment=left><font name = Arial color=black size=8>" + citedList[k] + "</font>",
                            style=styles["Normal"])
-            p2 = Paragraph(text="<para alignment=center><font color=black size=8>" + str(categoryList[k]) + "</font>",
+            p2 = Paragraph(text="<para alignment=center><font name = Arial color=black size=8>" + str(categoryList[k]) + "</font>",
                            style=styles["Normal"])
-            p3 = Paragraph(text="<para alignment=center><font color=black size=8>" + str(punctajList[k]) + "</font>",
+            p3 = Paragraph(text="<para alignment=center><font name = Arial color=black size=8>" + str(punctajList[k]) + "</font>",
                            style=styles["Normal"])
             data.append(['', p1, p2, p3])
         print ('new line')
@@ -59,7 +58,7 @@ def buildCategoryTable(article, citedList, categoryList, punctajList, data, tabl
     #     #data.append(['', citedList[i], categoryList[i], punctajList[i]])
     # if len(citedList) == 0:
     #     data.append(['', '', '', ''])
-    data[firstRow][0] = Paragraph(text="<para alignment=left><font color=black size=8>" + article + "</font>",style=styles["Normal"])
+    data[firstRow][0] = Paragraph(text="<para alignment=left><font name = Arial color=black size=8>" + article + "</font>",style=styles["Normal"])
     lastColumn = firstRow + max(0, len(citedList) - 1)
     #tableStyle.add('SPAN', (0, firstRow), (0, lastColumn))
     tableStyle.add('LINEBELOW', (0, lastColumn), (-1, lastColumn), 1, colors.black)
@@ -113,6 +112,7 @@ print('Second Python Script')
 pdfmetrics.registerFont(TTFont('Verdana', 'Verdana.ttf'))
 pdfmetrics.registerFont(TTFont("Verdana-Bold", "verdanab.ttf"))
 pdfmetrics.registerFont(TTFont("Verdana-Italic", "Verdana Italic.ttf"))
+pdfmetrics.registerFont(TTFont("Arial", "Arial.ttf"))
 
 doc = SimpleDocTemplate("src/main/resources/SecondPDF.pdf", pagesize=A4)
 # container for the 'Flowable' objects
@@ -129,7 +129,6 @@ def generateFirstTable(name, punctaj1, punctaj2):
 
     p5 = Paragraph(text=  "<font color=black>Punctaj citari din forumuti de tip A si B</font>",  style=styles["Normal"])
     p6 = Paragraph(text=  "<para alignment=right><font color=black >" + punctaj2 + " puncte</font>",  style=styles["Normal"])
-
 
     lucrariABC = "Lucrari categoriile A, B si C"
 
@@ -153,18 +152,13 @@ def generateFirstTable(name, punctaj1, punctaj2):
               hAlign='LEFT')
     return t
 
-
 name = "Gabriel Mircea"
 punctaj1 = str(100)
 punctaj2 = str(80)
 
 
-
-
 elements.append(generateFirstTable(name, punctaj1, punctaj2))
 elements.append(KeepTogether(Spacer(1, 24)))
-#elements.append(Spacer(1, 24))
-
 
 
 p1 = Paragraph(text=  "<para alignment=center><font color=white>Lucrare citata</font>",  style=styles["Normal"])
@@ -176,9 +170,7 @@ p4 = Paragraph(text=  "<para alignment=center><font color=white>Punctaj</font>",
 articleList = ["abcd", "xyzt", "qwerty"]
 punctajList = [100, 50, 73]
 
-#
 data = [[p1 , p2, p3, p4] ]
-
 
 tableStyle = TableStyle(
     [('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
@@ -193,13 +185,10 @@ tableStyle = TableStyle(
      ]
 )
 
-
 input = sys.argv[1].replace('$', ' ')
 list = input.split("%")
 for i in list:
     parsePublicationAndCitation(i, data, tableStyle)
-    #print (i)
-
 
 
 colWidth = [100, 200, 70, 60]
@@ -208,8 +197,6 @@ t = Table(data, colWidths=colWidth, rowHeights=None,
           hAlign='LEFT')
 
 elements.append(t)
-
-
 
 # write the document to disk
 

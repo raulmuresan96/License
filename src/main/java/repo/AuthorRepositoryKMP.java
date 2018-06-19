@@ -91,7 +91,10 @@ public class AuthorRepositoryKMP implements IAuthorRepository {
     }
 
     private Set<Author> searchAuthorsByWord(String searchString){
+        System.out.println(searchString);
+        searchString = " " + searchString;
         int[] prefix = computePrefixArray(searchString);
+        System.out.println();
         Set<Author> searchResult = new HashSet<>();
         for(Author author: authors.keySet()){
             if(kmpSearch(searchString, " " + author.getFirstname(), prefix) || kmpSearch(searchString, " " + author.getSurname(), prefix)){

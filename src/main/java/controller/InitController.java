@@ -25,6 +25,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/API/init")
+@CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "*")
 public class InitController {
 
     @Autowired
@@ -99,5 +100,14 @@ public class InitController {
         return "ok";
         //populateAuthorDbRepo.addAll(authors);
     }
+
+
+
+    @RequestMapping(value = "/test", method = RequestMethod.GET)
+    public Author testAngular(){
+        return new Author("100", "Raul", "Muresan");
+    }
+
+
 
 }

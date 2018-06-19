@@ -3,14 +3,16 @@ package controller;
 import model.CitationPublicationCsv;
 import model.Journal;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import service.JournalService;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +23,7 @@ import java.util.Map;
  */
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "*")
 public class StatisticsController {
     @Autowired
     private JournalService journalService;
@@ -34,8 +37,16 @@ public class StatisticsController {
     private Map<String, List<String>> citationsMap;
     private Map<Integer, List<String>> citedPublications;
 
+    private void saveFileToDisk(String filename, MultipartFile file){
+        try {
+            OutputStream out = new FileOutputStream(filename);
+            out.write(file.getBytes());
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-
+    }
 
     private void saveCsvFiles(CitationPublicationCsv citationPublicationCsv){
         try {
@@ -117,14 +128,58 @@ public class StatisticsController {
 //        publicationInformation.deleteCharAt(publicationInformation.length() - 1);
 //        System.out.println(publicationInformation);
 //        executePythonScript(pythonFile, publicationInformation.toString().replace(' ', '$'));
+
     }
 
-    @RequestMapping(value = "/generatePdf", method = RequestMethod.POST)
-    public ResponseEntity<?> init(@RequestBody CitationPublicationCsv citationPublicationCsv){
+    private byte[] getByteArrayFromFile(String fileName){
+        File fileToReturn = new File(fileName);
+        Path path = Paths.get(fileToReturn.getAbsolutePath());
+        ByteArrayResource resource = null;
+        try {
+            resource = new ByteArrayResource(Files.readAllBytes(path));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return resource.getByteArray();
+    }
+
+
+    @RequestMapping(value = "/publicationPdf", method = RequestMethod.POST)
+    public ResponseEntity<byte[]> generatePublicationPdf(MultipartFile publicationCsv, String authorName){
+        System.out.println("Nume autor " + authorName);
+        System.out.println(publicationCsv.getSize());
+
+
+        saveFileToDisk(publicationFileName, publicationCsv);
+
+
+        List<String> publicationLineList = readCSVFile(publicationFileName);
+
+        List<String> publicationLabels = parseLineFromCSV(publicationLineList.get(0));
+
+        publicationsMap = buildMap(publicationLabels, publicationLineList);
+
+
+        generateScientificProductionPDF(publicationLineList);
+
+
+        byte[] response = getByteArrayFromFile("src/main/resources/FirstPDF.pdf");
+        return ResponseEntity.ok()
+                .body(response);
+    }
+
+
+    @RequestMapping(value = "/citationPdf", method = RequestMethod.POST)
+    public ResponseEntity<byte[]> init(MultipartFile publicationCsv, MultipartFile citationCsv){
+    //public ResponseEntity<?> init(@RequestBody CitationPublicationCsv citationPublicationCsv){
+        //MultipartFile publicationCsv
 //        System.out.println(citationPublicationCsv.getPublicationCsv().length);
 //        System.out.println(citationPublicationCsv.getCitationCsv().length);
 
-        saveCsvFiles(citationPublicationCsv);
+        //saveCsvFiles(citationPublicationCsv);
+        saveFileToDisk(publicationFileName, publicationCsv);
+
+        saveFileToDisk(citationFileName, citationCsv);
 
         List<String> publicationLineList = readCSVFile(publicationFileName);
         List<String> citationLineList = readCSVFile(citationFileName);
@@ -135,7 +190,7 @@ public class StatisticsController {
         publicationsMap = buildMap(publicationLabels, publicationLineList);
         citationsMap = buildMap(citationLabels, citationLineList);
 
-        generateScientificProductionPDF(publicationLineList);
+        //generateScientificProductionPDF(publicationLineList);
 
 
         citedPublications = getAllCitedPublications();
@@ -178,9 +233,11 @@ public class StatisticsController {
 //            //System.out.println(reference);
 //        }
 //
+        byte[] response = getByteArrayFromFile("src/main/resources/SecondPDF.pdf");
+        return ResponseEntity.ok()
+                .body(response);
 
-
-        return ResponseEntity.ok("File succesfully uploaded");
+        //return ResponseEntity.ok("File succesfully uploaded");
         //return (ResponseEntity<?>) ResponseEntity.badRequest();
         //journalService.populateFromFile();
     }
