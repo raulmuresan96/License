@@ -5,10 +5,10 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, inch, A4
 from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Table
 from reportlab.lib.styles import getSampleStyleSheet
+from decimal import Decimal
 import sys
 
 def buildCategoryTable(category, articleList, punctajList):
-
     p1 = Paragraph(text="<font color=white>Lucrari categoria: " + category + "</font>", style=styles["BodyText"])
     p2 = Paragraph(text="<font color=black size=8>Autori, Titlul publicatiei, Referinta bibliografica:</font>",
                    style=styles["BodyText"])
@@ -17,17 +17,20 @@ def buildCategoryTable(category, articleList, punctajList):
     data = [[p1, ''], [p2, p3]]
     totalPoints = 0
     for i in range(0, len(articleList)):
+        #round(punctajList[i],2)
         p1 = Paragraph(text="<para alignment=left><font name = Arial color=black size=8>" + articleList[i] + "</font>", style=styles["BodyText"])
-        p2 = Paragraph(text="<para alignment=center><font color=black size=8>" + str(punctajList[i]) + "</font>", style=styles["BodyText"])
+        p2 = Paragraph(text="<para alignment=center><font color=black size=8>" + str(round(punctajList[i],2)) + "</font>", style=styles["BodyText"])
         data.append([p1, p2])
         totalPoints += punctajList[i]
 
     lastRowParagraphLeft = Paragraph(text="<para alignment=right><font name = Verdana-Bold color=black size=8>Punctaj total lucrari categoria "+
                                           category+":</font>",
         style=styles["BodyText"])
-    lastRowParagraphRight = Paragraph(text="<para alignment=center><font color=black size=8> " + str(totalPoints) + "</font>", style=styles["BodyText"])
+    lastRowParagraphRight = Paragraph(text="<para alignment=center><font color=black size=8> " + str(round(totalPoints,2)) + "</font>", style=styles["BodyText"])
     #
     data.append([lastRowParagraphLeft, lastRowParagraphRight])
+
+    #round(totalPoints,2)
 
 
     nrRows = 3 + len(articleList)
@@ -95,9 +98,7 @@ pdfmetrics.registerFont(TTFont('Arial', 'Arial.ttf'))
 pdfmetrics.registerFont(TTFont("Verdana-Bold", "verdanab.ttf"))
 pdfmetrics.registerFont(TTFont("Verdana-Italic", "Verdana Italic.ttf"))
 
-
 print ('This is Python')
-
 
 def parsePointsArguments(string, splitCharacter):
 
@@ -117,7 +118,6 @@ def parsePaperArguments(string, splitCharacter):
     stringList = string.split(splitCharacter)
     return stringList
 
-
 categoryAInformation = sys.argv[1]
 categoryAInformation = categoryAInformation.strip('[]')
 
@@ -136,9 +136,9 @@ categoryAPoints = parsePointsArguments(sys.argv[2], ",")
 categoryBPoints = parsePointsArguments(sys.argv[4], ",")
 categoryCPoints = parsePointsArguments(sys.argv[6], ",")
 
-categoryAPoints = [int(x) for x in categoryAPoints if x]
-categoryBPoints = [int(x)  for x in categoryBPoints if x]
-categoryCPoints = [int(x)  for x in categoryCPoints if x]
+categoryAPoints = [Decimal(x) for x in categoryAPoints if x]
+categoryBPoints = [Decimal(x)  for x in categoryBPoints if x]
+categoryCPoints = [Decimal(x)  for x in categoryCPoints if x]
 print (categoryCPoints)
 
 
@@ -151,8 +151,17 @@ categoryBPaperList = [x for x in categoryBPaperList if x]
 categoryCPaperList = [x for x in categoryCPaperList if x]
 
 
+scoresSum = sum(categoryAPoints) + sum(categoryBPoints) + sum(categoryCPoints)
+scoresSum = round(scoresSum, 2)
 
-elements.append(buildStatisticsTable("Mircea Gabriel", 100, 65))
+abScoresSum = sum(categoryAPoints) + sum(categoryBPoints)
+abScoresSum = round(abScoresSum, 2)
+
+authorName = sys.argv[7].replace("?", " ")
+
+
+
+elements.append(buildStatisticsTable(authorName, scoresSum, abScoresSum))
 elements.append(Spacer(1, 24))
 elements.append(buildCategoryTable("A", categoryAPaperList, categoryAPoints))
 elements.append(Spacer(1, 24))
@@ -161,10 +170,7 @@ elements.append(Spacer(1, 24))
 elements.append(buildCategoryTable("C", categoryCPaperList, categoryCPoints))
 
 
-
 doc.build(elements)
-
-
 
 print(sys.argv[1])
 print(sys.argv[2])
@@ -172,6 +178,6 @@ print(sys.argv[3])
 print(sys.argv[4])
 print(sys.argv[5])
 print(sys.argv[6])
-
+print('Nume autor ' + sys.argv[7])
 
 print('THIS IS NOT PYTHON ANYMORE')

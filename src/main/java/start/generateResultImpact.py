@@ -8,9 +8,11 @@ from reportlab.lib.pagesizes import letter, inch, A4
 from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 
-
+totalCitationsScore = 0.0
+cCitationsScore = 0.0
 
 def buildCategoryTable(article, citedList, categoryList, punctajList, data, tableStyle):
+    #global totalCitationsScore
     print("NUmar de lucrari" + str(len(citedList)))
     firstRow = len(data)
     j = 0
@@ -25,14 +27,17 @@ def buildCategoryTable(article, citedList, categoryList, punctajList, data, tabl
 
         #font name = Arial
 
+        #round(punctajList[k], 2)
+
         for k in range(j, min(len(citedList), j + 5)):
             print k
             p1 = Paragraph(text="<para alignment=left><font name = Arial color=black size=8>" + citedList[k] + "</font>",
                            style=styles["Normal"])
             p2 = Paragraph(text="<para alignment=center><font name = Arial color=black size=8>" + str(categoryList[k]) + "</font>",
                            style=styles["Normal"])
-            p3 = Paragraph(text="<para alignment=center><font name = Arial color=black size=8>" + str(punctajList[k]) + "</font>",
+            p3 = Paragraph(text="<para alignment=center><font name = Arial color=black size=8>" + str(round(float(punctajList[k]), 2)) + "</font>",
                            style=styles["Normal"])
+            #totalCitationsScore += punctajList[k]
             data.append(['', p1, p2, p3])
         print ('new line')
         tableStyle.add('SPAN', (0, jAtBeginning), (0, j))
@@ -78,6 +83,8 @@ def parseSingleCitation(string):
 
 
 def parsePublicationAndCitation(string, data, tableStyle):
+    global totalCitationsScore
+    global cCitationsScore
     list = string.split("=")
     publication = list[0]
     citations = list[1]
@@ -93,10 +100,19 @@ def parsePublicationAndCitation(string, data, tableStyle):
         citationsTitle.append(citationFields[0])
         citationsCategory.append(citationFields[1])
         citationsPoints.append(citationFields[2])
-    print citationsTitle
-    print citationsCategory
-    print citationsPoints
+        totalCitationsScore += float(citationFields[2])
+        # print('TIP!!!!!!!')
+        # print(type(citationFields[1]))
+        if citationFields[1] == 'C':
+            cCitationsScore += float(citationFields[2])
+    #print citationsTitle
+    #print citationsCategory
+    #print citationsPoints
     buildCategoryTable(publication, citationsTitle, citationsCategory, citationsPoints, data, tableStyle)
+
+    print('&&&&&&punctaje')
+    print(citationsPoints)
+
 
 
 
@@ -122,13 +138,15 @@ styleSheet = getSampleStyleSheet()
 styles = getSampleStyleSheet()
 
 def generateFirstTable(name, punctaj1, punctaj2):
+    #str(round(punctaj2,2))
+
     p1 = Paragraph(text=  "<font color=white>Nume Prenume: " + name + "</font>",  style=styles["Normal"])
     p2 = Paragraph(text=  "<font color=white>Impactul rezultatelor: </font>",  style=styles["Normal"])
     p3 = Paragraph(text=  "<font color=black>Punctaj total citari</font>",  style=styles["Normal"])
-    p4 = Paragraph(text=  "<para alignment=right><font color=black>" + punctaj1 + " puncte</font>",  style=styles["Normal"])
+    p4 = Paragraph(text=  "<para alignment=right><font color=black>" + str(round(punctaj1,2)) + " puncte</font>",  style=styles["Normal"])
 
     p5 = Paragraph(text=  "<font color=black>Punctaj citari din forumuti de tip A si B</font>",  style=styles["Normal"])
-    p6 = Paragraph(text=  "<para alignment=right><font color=black >" + punctaj2 + " puncte</font>",  style=styles["Normal"])
+    p6 = Paragraph(text=  "<para alignment=right><font color=black >" + str(round(punctaj2,2)) + " puncte</font>",  style=styles["Normal"])
 
     lucrariABC = "Lucrari categoriile A, B si C"
 
@@ -152,13 +170,6 @@ def generateFirstTable(name, punctaj1, punctaj2):
               hAlign='LEFT')
     return t
 
-name = "Gabriel Mircea"
-punctaj1 = str(100)
-punctaj2 = str(80)
-
-
-elements.append(generateFirstTable(name, punctaj1, punctaj2))
-elements.append(KeepTogether(Spacer(1, 24)))
 
 
 p1 = Paragraph(text=  "<para alignment=center><font color=white>Lucrare citata</font>",  style=styles["Normal"])
@@ -167,8 +178,8 @@ p3 = Paragraph(text=  "<para alignment=center><font color=white>Categorie CNATDC
 p4 = Paragraph(text=  "<para alignment=center><font color=white>Punctaj</font>",  style=styles["Normal"])
 
 # # lucrariABC = "Lucrari categoriile A, B si C"
-articleList = ["abcd", "xyzt", "qwerty"]
-punctajList = [100, 50, 73]
+# articleList = ["abcd", "xyzt", "qwerty"]
+# punctajList = [100, 50, 73]
 
 data = [[p1 , p2, p3, p4] ]
 
@@ -196,6 +207,14 @@ t = Table(data, colWidths=colWidth, rowHeights=None,
           style=tableStyle,
           hAlign='LEFT')
 
+
+
+authorName = sys.argv[2].replace("?", " ")
+
+
+
+elements.append(generateFirstTable(authorName, round(totalCitationsScore, 2), round(totalCitationsScore - cCitationsScore, 2)))
+elements.append(KeepTogether(Spacer(1, 24)))
 elements.append(t)
 
 # write the document to disk
@@ -204,6 +223,9 @@ elements.append(t)
 
 
 doc.build(elements)
+
+print(totalCitationsScore)
+
 
 # publication = list[0];
 # #print(publication.split("%"))

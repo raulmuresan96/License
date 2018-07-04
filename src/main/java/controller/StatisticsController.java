@@ -73,14 +73,13 @@ public class StatisticsController {
     }
 
 
-    private void generateScientificProductionPDF(List<String>  publicationLineList){
-
+    private void generateScientificProductionPDF(List<String>  publicationLineList, String authorName){
        List<String> categoryAPapers = new ArrayList<>();
        List<String> categoryBPapers = new ArrayList<>();
        List<String> categoryCPapers = new ArrayList<>();
-       List<Integer> categoryAPoints = new ArrayList<>();
-       List<Integer> categoryBPoints = new ArrayList<>();
-       List<Integer> categoryCPoints = new ArrayList<>();
+       List<Double> categoryAPoints = new ArrayList<>();
+       List<Double> categoryBPoints = new ArrayList<>();
+       List<Double> categoryCPoints = new ArrayList<>();
 
         //StringBuilder publicationInformation = new StringBuilder();
         getPublicationDataForPrinting(publicationLineList.size() - 1,
@@ -112,8 +111,10 @@ public class StatisticsController {
         pythonScriptsArguments.add(categoryCString.toString().replace(' ', '$'));
         pythonScriptsArguments.add(categoryCPoints.toString().replace(' ', '$'));
 
-        executePythonScript(generateScientificProductionFile, pythonScriptsArguments);
+        authorName = authorName.replace(" ", "?");
+        pythonScriptsArguments.add(authorName);
 
+        executePythonScript(generateScientificProductionFile, pythonScriptsArguments);
 
 //        System.out.println(categoryAPapers);
 //        System.out.println(categoryAPoints);
@@ -149,9 +150,7 @@ public class StatisticsController {
         System.out.println("Nume autor " + authorName);
         System.out.println(publicationCsv.getSize());
 
-
         saveFileToDisk(publicationFileName, publicationCsv);
-
 
         List<String> publicationLineList = readCSVFile(publicationFileName);
 
@@ -159,18 +158,15 @@ public class StatisticsController {
 
         publicationsMap = buildMap(publicationLabels, publicationLineList);
 
-
-        generateScientificProductionPDF(publicationLineList);
-
+        generateScientificProductionPDF(publicationLineList, authorName);
 
         byte[] response = getByteArrayFromFile("src/main/resources/FirstPDF.pdf");
         return ResponseEntity.ok()
                 .body(response);
     }
 
-
     @RequestMapping(value = "/citationPdf", method = RequestMethod.POST)
-    public ResponseEntity<byte[]> init(MultipartFile publicationCsv, MultipartFile citationCsv){
+    public ResponseEntity<byte[]> init(MultipartFile publicationCsv, MultipartFile citationCsv, String authorName){
     //public ResponseEntity<?> init(@RequestBody CitationPublicationCsv citationPublicationCsv){
         //MultipartFile publicationCsv
 //        System.out.println(citationPublicationCsv.getPublicationCsv().length);
@@ -224,10 +220,11 @@ public class StatisticsController {
 
         List<String> arguments = new ArrayList<>();
         arguments.add(citationsString.toString().replace(' ', '$'));
+
+        authorName = authorName.replace(" ", "?");
+        arguments.add(authorName);
         executePythonScript(resultImpactFile, arguments);
 
-
-//
 //        //System.out.println(citationsMap.get("References").get(0));
 //        for(String reference: citationsMap.get("References")){
 //            //System.out.println(reference);
@@ -236,7 +233,6 @@ public class StatisticsController {
         byte[] response = getByteArrayFromFile("src/main/resources/SecondPDF.pdf");
         return ResponseEntity.ok()
                 .body(response);
-
         //return ResponseEntity.ok("File succesfully uploaded");
         //return (ResponseEntity<?>) ResponseEntity.badRequest();
         //journalService.populateFromFile();
@@ -314,10 +310,8 @@ public class StatisticsController {
         return lineList;
     }
 
-
-
     public  List<String> getPublicationDataForPrinting(int nrPublications, List<String> categoryAPapers, List<String> categoryBPapers, List<String> categoryCPapers,
-                                                       List<Integer> categoryAPoints, List<Integer> categoryBPoints, List<Integer> categoryCPoints){
+                                                       List<Double> categoryAPoints, List<Double> categoryBPoints, List<Double> categoryCPoints){
         List<String> list = new ArrayList<>();
         for(int i = 0; i < nrPublications; i++){
             String issn = publicationsMap.get("ISSN").get(i);
@@ -325,26 +319,36 @@ public class StatisticsController {
                 issn = issn.substring(0, 4) + "-" + issn.substring(4);
 
                 Journal journal = journalService.findOne(issn);
+                int nrAuthors = publicationsMap.get("\uFEFFAuthors").get(i).split(",").length;
                 if(journal != null){
                     String journalCategory = journal.getCategory();
                     if(journalCategory.equals("A") || journalCategory.equals("A*")){
                         categoryAPapers.add(publicationsMap.get("\uFEFFAuthors").get(i) + "," + publicationsMap.get("Title").get(i) + "," + publicationsMap.get("Source title").get(i));
-                        categoryAPoints.add(3);
+                        double publicationScore;
+                        if(journalCategory.equals("A*")){
+                            publicationScore = 12.0;
+                        }
+                        else{
+                            publicationScore = 8.0;
+                        }
+                        categoryAPoints.add(publicationScore / nrAuthors);
                     }
                     else if(journalCategory.equals("B")){
                         categoryBPapers.add(publicationsMap.get("\uFEFFAuthors").get(i) + "," + publicationsMap.get("Title").get(i) + "," + publicationsMap.get("Source title").get(i));
-                        categoryBPoints.add(2);
+                        double publicationScore = 4.0;
+                        categoryBPoints.add(publicationScore / nrAuthors);
                     }
                     else {//Category C
                         categoryCPapers.add(publicationsMap.get("\uFEFFAuthors").get(i) + "," + publicationsMap.get("Title").get(i) + "," + publicationsMap.get("Source title").get(i));
-                        categoryCPoints.add(1);
+                        double publicationScore = 2.0;
+                        categoryCPoints.add(publicationScore / nrAuthors);
                     }
                 }
             }
-
             //list.add(publicationsMap.get("\uFEFFAuthors").get(i) + "," + publicationsMap.get("Title").get(i) + "," + publicationsMap.get("Source title").get(i));
             //System.out.println(publicationsMap.get("Title").get(i) + "####" + publicationsMap.get("Source title").get(i));
         }
+        System.out.println(list);
         return list;
     }
 
@@ -416,12 +420,23 @@ public class StatisticsController {
         return map;
     }
 
+    private double getScoreFromCategory(String category){
+        if(category.equals("A*"))
+            return 12.0;
+        if(category.equals("A"))
+            return 8.0;
+        if(category.equals("B"))
+            return 4.0;
+        return 2.0;
+
+    }
 
     private void populateCitedPublicationsMap() {
 
         for(int currentPublication: citedPublications.keySet()){
             //System.out.println(currentPublication);
             String title = publicationsMap.get("Title").get(currentPublication);
+            int nrAuthors = publicationsMap.get("\uFEFFAuthors").get(currentPublication).split(",").length;
             System.out.println(title);
 
             for(int i = 0; i < citationsMap.get("References").size(); i++){
@@ -445,7 +460,8 @@ public class StatisticsController {
                     stringBuilder.append("#");
                     stringBuilder.append(category);
                     stringBuilder.append("#");
-                    stringBuilder.append(5);
+                    double score = getScoreFromCategory(category);
+                    stringBuilder.append(score / nrAuthors);
 
                     //String citationInformation =   + "," + citationsMap.get().get(i);
                     citedPublications.get(currentPublication).add(stringBuilder.toString());
@@ -496,9 +512,4 @@ public class StatisticsController {
 //        //System.out.println(publicationsMap);
 //        System.out.println(citedPublications);
 //    }
-
-
-
-
-
 }

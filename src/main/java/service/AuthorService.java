@@ -31,14 +31,15 @@ import java.util.Set;
 public class AuthorService {
 
         @Autowired
-        //@Qualifier("parallelTrie")
+
         //@Qualifier("parallelCached")
         //@Qualifier("trieCached")
         //@Qualifier("database")
         //@Qualifier("parallel")
-        @Qualifier("kmp")
-
+        //@Qualifier("kmp")
+        @Qualifier("parallelTrie")
         private IAuthorRepository authorRepository;
+
         //private AuthorTrieRepository authorTrieRepository;
         private String tokenValue = "", authorSearchByNameApiUrl = "", authorsUrl = "";
 
@@ -166,7 +167,6 @@ public class AuthorService {
         }
         String surname = names[0];
         String firstName = stringBuilder.toString().trim();
-//        query= AUTHLASTNAME(Mircea) AND AUTHFIRST(Gabriel Ioan) AND AFFIL(Universitatea Babes-Bolyai din Cluj-Napoca)
         //String apiUrl = authorSearchByNameApiUrl + "query=AUTHLASTNAME(" + surname + ")AND%20AUTHFIRST(" + firstName + ")AND%20AFFIL(Universitatea%20Babes-Bolyai%20din%20Cluj-Napoca)";
         String apiUrl = authorSearchByNameApiUrl + "query=AUTHLASTNAME(" + surname + ")AND AUTHFIRST(" + firstName + ")AND AFFIL(Universitatea Babes-Bolyai din Cluj-Napoca)";
         apiUrl = apiUrl.replaceAll(" ", "%20");

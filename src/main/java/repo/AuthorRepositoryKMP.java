@@ -25,7 +25,7 @@ public class AuthorRepositoryKMP implements IAuthorRepository {
     private AuthorRepository authorRepository;
     private Map<Author, Boolean> authors;
 
-    @PostConstruct
+    //@PostConstruct
     public void init(){
         populateDB();
         authors = new ConcurrentHashMap<>();

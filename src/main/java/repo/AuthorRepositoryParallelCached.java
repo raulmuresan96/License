@@ -48,46 +48,45 @@ public class AuthorRepositoryParallelCached implements IAuthorRepository {
 
 
         ExecutorService cacheCleaningExecutorService =  Executors.newSingleThreadExecutor();
-//        cacheCleaningExecutorService.submit(()->{
-//            Date date = new Date();
-//            try {
-//                while(true){
-//                    //System.out.println(date.getTime());
-//                    long startTime = new Date().getTime();
-//                    System.out.println("Iterating Cache Size: " + cache.size());
-//                    for(Map.Entry<String, Future<CacheCell>> entry: cache.entrySet()){
-//
-//                        String key = entry.getKey();
-//                        Future<CacheCell> value = entry.getValue();
-//                        if(value.isDone()){
-//                            try {
-//                                CacheCell cacheCell = value.get();
-//                                //System.out.println("CACHE: " + key + " " +cacheCell.getUsers() + " " + cache.size());
-//                                //System.out.println(new Date().getTime() - cacheCell.getLastTimeQueried());
-//                                //System.out.println(startTime - cacheCell.getLastTimeQueried());
-//                                if(startTime - cacheCell.getLastTimeQueried() > 8000){
-//                                    //the remove operation can fail if meanwhile a query for the key was executed
-//                                    //and the removal is no longer needed
-//                                    cache.remove(key, value);
-//                                    //System.out.println(cache.remove(key, value));
-//                                }
-//
-//                            } catch (ExecutionException e) {
-//                                e.printStackTrace();
-//                            }
-//
-//                        }
-//                    }
-//                    Thread.sleep(10000);
-//
-//                }
-//            }
-//            catch (InterruptedException exception){
-//                System.out.println("");
-//            }
-//
-//            System.out.println("works fine");
-//        });
+        cacheCleaningExecutorService.submit(()->{
+            try {
+                while(true){
+                    //System.out.println(date.getTime());
+                    long startTime = new Date().getTime();
+                    System.out.println("Iterating Cache Size: " + cache.size());
+                    for(Map.Entry<String, Future<CacheCell>> entry: cache.entrySet()){
+
+                        String key = entry.getKey();
+                        Future<CacheCell> value = entry.getValue();
+                        if(value.isDone()){
+                            try {
+                                CacheCell cacheCell = value.get();
+                                //System.out.println("CACHE: " + key + " " +cacheCell.getUsers() + " " + cache.size());
+                                //System.out.println(new Date().getTime() - cacheCell.getLastTimeQueried());
+                                //System.out.println(startTime - cacheCell.getLastTimeQueried());
+                                if(startTime - cacheCell.getLastTimeQueried() > 8000){
+                                    //the remove operation can fail if meanwhile a query for the key was executed
+                                    //and the removal is no longer needed
+                                    cache.remove(key, value);
+                                    //System.out.println(cache.remove(key, value));
+                                }
+
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    }
+                    Thread.sleep(10000);
+
+                }
+            }
+            catch (InterruptedException exception){
+                System.out.println("");
+            }
+
+            System.out.println("works fine");
+        });
 
         //System.out.println(authors);
     }
@@ -122,7 +121,7 @@ public class AuthorRepositoryParallelCached implements IAuthorRepository {
 
         operations.put(operationCounter.incrementAndGet(), operation);
         treeMapReadWriteLock.writeLock().unlock();
-        return null;
+        return author;
     }
 
     private CacheCell computeSearch(String searchString){

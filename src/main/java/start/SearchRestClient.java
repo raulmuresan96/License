@@ -55,7 +55,7 @@ public class SearchRestClient {
 //        }
         System.out.println(authors.size());
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.postForObject("http://localhost:8080/API/init/populate", authors, Object.class);
+        restTemplate.postForObject("http://localhost:8090/API/init/populate", authors, Object.class);
         System.out.println("Finished populating DB");
     }
 
@@ -91,12 +91,12 @@ public class SearchRestClient {
                             //System.out.println("ADD");
                             Author author = new Author(line[1], line[2], line[3]);
                             //System.out.println("ADD " + author);
-                            restTemplate.postForObject("http://localhost:8080/author/add", author, Author.class);
+                            restTemplate.postForObject("http://localhost:8090/author/add", author, Author.class);
                             //searchEngine.addUser(line[1]);
                         }
                         else {
                             //System.out.println("Search " + line[1]);
-                            ResponseEntity<List> response = restTemplate.getForEntity("http://localhost:8080/author/"
+                            ResponseEntity<List> response = restTemplate.getForEntity("http://localhost:8090/author/"
                                     + line[1], List.class);
                             List<String> list = (List<String>)response.getBody();
                             //System.out.println("Search " + line[1] + list);
@@ -151,7 +151,7 @@ public class SearchRestClient {
 //        List<String> list = (List<String>)response.getBody();
 //        System.out.println(list);
         int usersCount = 1_000;
-        int queriesCount = 1_000;
+        int queriesCount = 10_000;
         populateFiles(usersCount, queriesCount);
 
         //executeQueries();

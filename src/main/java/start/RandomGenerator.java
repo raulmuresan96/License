@@ -49,7 +49,7 @@ public class RandomGenerator {
 
     public static void populateFiles(int usersCount, int queriesCount){
         List<String> users = new ArrayList<>();
-        //Using words from Scrabble List
+//        //Using words from Scrabble List
 //        try (Stream<String> lines = Files.lines(Paths.get("src/main/resources/ScrabbleWords.txt"), Charset.defaultCharset())) {
 //            //nrQueries = (int)lines.count();
 //            users = lines.map(String::toLowerCase).collect(Collectors.toList());

@@ -24,6 +24,8 @@ import java.util.stream.Stream;
 /**
  * Created by Raul on 17/04/2018.
  */
+
+
 @Repository("parallelTrie")
 public class AuthorTrieRepository implements IAuthorRepository {
 
@@ -39,13 +41,13 @@ public class AuthorTrieRepository implements IAuthorRepository {
     }
 
 
-    //@PostConstruct
+    @PostConstruct
     public void init(){
         populateDB();
         authors = new ConcurrentHashMap<>();
         authorsIds = new ConcurrentHashMap<>();
         populateTrie();
-        System.out.println(authors);
+        System.out.println(authors.keySet());
     }
 
     private void populateDB(){
@@ -68,17 +70,15 @@ public class AuthorTrieRepository implements IAuthorRepository {
         Iterable<Author> iterable = authorRepository.searchAuthors();
         //System.out.println(iterable.);
         trie = new Trie();
-        AtomicInteger nr = new AtomicInteger(0);
+
 
         iterable.forEach(author -> {
-            nr.incrementAndGet();
             authors.put(author, true);
             authorsIds.put(author.getAuthorId(), author);
             String authorId = author.getAuthorId();
             splitStringIntoWords(authorId, author.getFirstname().toLowerCase());
             splitStringIntoWords(authorId, author.getSurname().toLowerCase());
         });
-        System.out.println(nr.get());
 
     }
 
@@ -107,7 +107,6 @@ public class AuthorTrieRepository implements IAuthorRepository {
             trie.insert(string, i, authorId);
         }
     }
-
 
     public Collection<Author> convertIdsToAuthors(Collection<String> ids){
         List<Author> authors = new ArrayList<>();
