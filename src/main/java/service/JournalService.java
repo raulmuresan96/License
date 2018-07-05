@@ -162,7 +162,6 @@ public class JournalService {
     }
 
     public void getJournalsFromFile() {
-        System.out.println("ajungeeeeee");
         journalCategoryMap = new HashMap<>();
         currentCategoryJournals = new ArrayList<>();
         currentCategory = 1;
@@ -227,7 +226,7 @@ public class JournalService {
 
             });
 
-            System.out.println("WORKDSSSSS");
+            //System.out.println("WORKDSSSSS");
             categoryMap.forEach((category, issn) -> {
                 System.out.println(category + " " + issn.size() + " " + issn);
             });

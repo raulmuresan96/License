@@ -41,6 +41,7 @@ public class AuthorController {
 
     @RequestMapping(value = "author/{name}", method = RequestMethod.GET)
     public Collection<Author> searchAuthors(@PathVariable("name")String queryString){
+        queryString = queryString.toLowerCase();
         long startTime = System.nanoTime();
 
 
@@ -160,8 +161,6 @@ public class AuthorController {
     @RequestMapping(value = "/string", method = RequestMethod.POST)
     public ResponseEntity<?> uploadPDF(@RequestBody String string){
         System.out.println("S-a primit :" + string);
-
-
         return ResponseEntity.ok("String was received by the server");
     }
 

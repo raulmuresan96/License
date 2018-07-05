@@ -121,7 +121,6 @@ public class SearchRestClient {
                         System.out.println("Exception ... "+ex.getMessage());
                     }
                 }
-
             };
             Thread thread = new Thread(task);
             threads.add(thread);
@@ -199,8 +198,6 @@ public class SearchRestClient {
 //        long stopTime = System.currentTimeMillis();
 //        long elapsedTime = stopTime - startTime;
 //        System.out.println(elapsedTime);
-
-
 
     }
 }

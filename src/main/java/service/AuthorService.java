@@ -112,6 +112,7 @@ public class AuthorService {
         System.out.println(surname + " " +  firstName + " " +  authorId);
         try {
             Author author = new Author(transformStringToAscii(authorId), transformStringToAscii(surname), transformStringToAscii(firstName));
+            System.out.println("Author " + author);
             this.save(author);
         }
         catch (UnsupportedEncodingException e){

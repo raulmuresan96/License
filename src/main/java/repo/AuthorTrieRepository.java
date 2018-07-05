@@ -43,7 +43,7 @@ public class AuthorTrieRepository implements IAuthorRepository {
 
     @PostConstruct
     public void init(){
-        populateDB();
+        //populateDB();
         authors = new ConcurrentHashMap<>();
         authorsIds = new ConcurrentHashMap<>();
         populateTrie();
@@ -145,7 +145,7 @@ public class AuthorTrieRepository implements IAuthorRepository {
         Set<String> queryResult = new HashSet<>();
         queryResult.addAll(trieNode.authors.keySet());
         for(int i = 1; i < names.length; i++){
-            //System.out.println("ajunge " + names[i]);
+            //System.out.println("ajunge " + names[i].toLowerCase());
             trieNode = trie.getNodeForString(names[i]);
             if(trieNode == null)
                 return new ArrayList<>();

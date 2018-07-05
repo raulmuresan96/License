@@ -48,20 +48,20 @@ public class StatisticsController {
 
     }
 
-    private void saveCsvFiles(CitationPublicationCsv citationPublicationCsv){
-        try {
-            OutputStream out = new FileOutputStream(publicationFileName);
-            out.write(citationPublicationCsv.getPublicationCsv());
-            out.close();
-
-            out = new FileOutputStream(citationFileName);
-            out.write(citationPublicationCsv.getCitationCsv());
-            out.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void saveCsvFiles(CitationPublicationCsv citationPublicationCsv){
+//        try {
+//            OutputStream out = new FileOutputStream(publicationFileName);
+//            out.write(citationPublicationCsv.getPublicationCsv());
+//            out.close();
+//
+//            out = new FileOutputStream(citationFileName);
+//            out.write(citationPublicationCsv.getCitationCsv());
+//            out.close();
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     private void eliminateLastSpecificCharacter(StringBuilder stringBuilder){
         if(stringBuilder.length() > 0){
@@ -256,8 +256,6 @@ public class StatisticsController {
 //        return ResponseEntity.ok("File succesfully uploaded");
 
 
-
-
     private  List<String> parseLineFromCSV(String line){
         int index = 0;
         StringBuilder currentString = new StringBuilder();
@@ -273,7 +271,6 @@ public class StatisticsController {
                 index = index + 2;
             }
             else{
-                //index++;
                 while(index < line.length() && line.charAt(index) != ','){
                     currentString.append(line.charAt(index));
                     index++;
